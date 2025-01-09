@@ -14,9 +14,9 @@ const fruits = ["banana", "apple", "melon", "durian"];
 app.get("/fruits", (req, res) => {
   res.json({ data: fruits });
 });
-app.post("/fruits/add", (req, res) => {
-  const newFruits = req.body.newFruits;
-  newFruits.push();
+app.post("/fruit/add", (req, res) => {
+  const newFruit = req.body.newFruit;
+  fruits.push(newFruit);
   res.json({ message: `new fruit added!` });
 });
 // app.put();
