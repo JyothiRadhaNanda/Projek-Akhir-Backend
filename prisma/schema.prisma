@@ -16,4 +16,6 @@ model Books{
   penulis       String
   penerbit      String
   tahun_terbit  Int
+  gambar        String?
+  pdf           String?
 }
