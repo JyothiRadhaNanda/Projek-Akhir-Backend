@@ -1,90 +1,55 @@
-import express from "express";
-import multer from "multer";
-import path from "path";
-import fs from "fs";
 import { PrismaClient } from "@prisma/client";
-
+import fs from "fs";
 const prisma = new PrismaClient();
-const router = express.Router();
 
-// Konfigurasi multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Simpan semua file di folder 'uploads'
-  },
-  filename: (req, file, cb) => {
-    const { judul } = req.body; // Ambil nama buku dari body request
-    const sanitizedJudul = judul.replace(/[^a-zA-Z0-9-_]/g, "_"); // Hindari karakter ilegal di nama file
-    const extension = path.extname(file.originalname); // Ekstensi file (misal .jpg, .png, atau .pdf)
-    cb(null, `${sanitizedJudul}${extension}`); // Nama file = judul yang sudah disanitasi + ekstensi
-  },
-});
-
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true); // File diizinkan
-  } else {
-    cb(new Error("Only images and PDF files are allowed!"), false); // Menolak file dengan tipe lain
-  }
-};
-
-const upload = multer({ storage: storage, fileFilter: fileFilter });
-
-// Endpoint untuk mendapatkan semua buku
-router.get("/", async (req, res) => {
+// Controller untuk mendapatkan semua buku
+export const getAllBooks = async (req, res) => {
   try {
-    const books = await prisma.books.findMany();
+    const books = await prisma.book.findMany();
     res.json({ data: books });
   } catch (error) {
     res.status(500).json({ message: "Error fetching books", error });
   }
-});
+};
 
-// Endpoint untuk menambahkan buku beserta gambar
-router.post(
-  "/add",
-  upload.fields([
-    { name: "gambar", maxCount: 1 }, // Untuk gambar
-    { name: "pdf", maxCount: 1 }, // Untuk PDF
-  ]),
-  async (req, res) => {
-    const { judul, penulis, penerbit, tahun_terbit } = req.body;
-    const gambarPath = req.files?.gambar
-      ? `/uploads/${req.files.gambar[0].filename}`
-      : null;
-    const pdfPath = req.files?.pdf
-      ? `/uploads/${req.files.pdf[0].filename}`
-      : null;
+// Controller untuk menambahkan buku beserta gambar
+export const addBook = async (req, res) => {
+  const { judul, penulis, penerbit, tahun_terbit } = req.body;
+  const gambarPath = req.files?.gambar
+    ? `/uploads/${req.files.gambar[0].filename}`
+    : null;
+  const pdfPath = req.files?.pdf
+    ? `/uploads/${req.files.pdf[0].filename}`
+    : null;
 
-    try {
-      const result = await prisma.books.create({
-        data: {
-          judul,
-          penulis,
-          penerbit,
-          tahun_terbit: Number(tahun_terbit),
-          gambar: gambarPath, // Path gambar
-          pdf: pdfPath, // Path PDF
-        },
-      });
+  try {
+    const result = await prisma.book.create({
+      data: {
+        judul,
+        penulis,
+        penerbit,
+        tahun_terbit: Number(tahun_terbit),
+        gambar: gambarPath, // Path gambar
+        pdf: pdfPath, // Path PDF
+        userId: req.user.userId,
+      },
+    });
 
-      res.json({ message: "New book added!", data: result });
-    } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Failed to add book", error: error.message });
-    }
+    res.json({ message: "New book added!", data: result });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to add book", error: error.message });
   }
-);
+};
 
-// Endpoint untuk mengupdate buku beserta gambar
-router.put("/:id/update", upload.single("gambar"), async (req, res) => {
+// Controller untuk mengupdate buku beserta gambar
+export const updateBook = async (req, res) => {
   const { judul, penulis, penerbit, tahun_terbit } = req.body;
   const gambarPath = req.file ? `/uploads/${req.file.filename}` : null;
 
   try {
-    const result = await prisma.books.update({
+    const result = await prisma.book.update({
       data: {
         judul,
         penulis,
@@ -99,12 +64,12 @@ router.put("/:id/update", upload.single("gambar"), async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Failed to update book", error });
   }
-});
+};
 
-// Endpoint untuk menghapus buku
-router.delete("/:id/delete", async (req, res) => {
+// Controller untuk menghapus buku
+export const deleteBook = async (req, res) => {
   try {
-    const book = await prisma.books.findUnique({
+    const book = await prisma.book.findUnique({
       where: { id: Number(req.params.id) },
     });
 
@@ -123,7 +88,7 @@ router.delete("/:id/delete", async (req, res) => {
       });
     }
 
-    const result = await prisma.books.delete({
+    const result = await prisma.book.delete({
       where: { id: Number(req.params.id) },
     });
 
@@ -131,6 +96,4 @@ router.delete("/:id/delete", async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error deleting book", error });
   }
-});
-
-export default router;
+};

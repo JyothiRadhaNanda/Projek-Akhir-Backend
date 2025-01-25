@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import bookController from "./controller/book.controller.js";
+import router from "./router/index.js"; // Mengimpor router utama
 const app = express();
 
 // Middleware
@@ -11,8 +11,8 @@ app.use(express.urlencoded({ extended: true }));
 // Melayani file statis
 app.use("/uploads", express.static("uploads"));
 
-// Gunakan router dari bookController
-app.use("/books", bookController);
+// Gunakan router dari router/index.js (router utama)
+app.use(router); // Semua route dari router akan dimulai dengan '/api'
 
 // Jalankan server
 app.listen(3030, () => {

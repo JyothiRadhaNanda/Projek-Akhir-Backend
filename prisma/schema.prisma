@@ -10,7 +10,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Books{
+model user {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  books     Book[]   // Relasi satu ke banyak dengan Books
+}
+
+model Book{
   id            Int   @id @default(autoincrement())
   judul         String   @unique
   penulis       String
@@ -18,4 +26,6 @@ model Books{
   tahun_terbit  Int
   gambar        String?
   pdf           String?
+  userId        Int    // Relasi dengan User
+  user          user   @relation(fields: [userId], references: [id])
 }
