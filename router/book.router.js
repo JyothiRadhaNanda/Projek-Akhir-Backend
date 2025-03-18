@@ -1,7 +1,11 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import { authenticateToken } from "../middleware/auth.middleware.js";
+import {
+  authenticateToken,
+  checkBookOwnership,
+  isUser,
+} from "../middleware/auth.middleware.js";
 import * as BookController from "../controller/book.controller.js"; // Import controller
 
 const router = express.Router();
@@ -48,6 +52,12 @@ router.post(
 router.put("/:id/update", upload.single("gambar"), BookController.updateBook);
 
 // Endpoint untuk menghapus buku
-router.delete("/:id/delete", BookController.deleteBook);
+router.delete(
+  "/:id/delete",
+  authenticateToken,
+  isUser,
+  checkBookOwnership,
+  BookController.deleteBook
+);
 
 export default router;

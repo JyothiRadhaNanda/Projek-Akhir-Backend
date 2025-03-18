@@ -26,12 +26,12 @@ class AuthController {
 
       // Generate JWT
       const token = jwt.sign(
-        { userId: user.id, username: user.username },
+        { userId: user.id, username: user.username, role: user.role },
         process.env.JWT_SECRET || "your-secret-key", // Ganti dengan secret key yang lebih aman
         { expiresIn: "1h" } // Token expired dalam 1 jam
       );
       console.log("Generated Token:", token);
-      res.json({ message: "Login successful", token });
+      res.json({ message: "Login successful", token, userId: user.id });
     } catch (error) {
       res.status(500).json({ message: "Failed to login", error });
     }

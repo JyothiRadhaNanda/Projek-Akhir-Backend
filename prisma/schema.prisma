@@ -15,6 +15,7 @@ model user {
   username  String   @unique
   email     String   @unique
   password  String
+  role      String   @default("USER")
   books     Book[]   // Relasi satu ke banyak dengan Books
 }
 
